@@ -1,0 +1,4 @@
+interface:
+  display_name: "重写发布验证"
+  short_description: "核对候选版本的验收覆盖、数据副作用与回退证据，形成有范围的发布判断"
+  default_prompt: "使用 $rewrite-release-validation 核查候选版本的发布证据、停止与回退条件，并给出有范围的发布判断。"

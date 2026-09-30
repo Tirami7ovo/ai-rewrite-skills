@@ -1,0 +1,4 @@
+interface:
+  display_name: "依据规格重写"
+  short_description: "依据已确认规格实施重写，追踪测试证据、行为差异和未决问题"
+  default_prompt: "使用 $spec-driven-rewrite 根据已核对的规格重写目标范围，并记录测试证据与未决事项。"

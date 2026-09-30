@@ -1,0 +1,4 @@
+interface:
+  display_name: "重写差异与质量审计"
+  short_description: "分开核查获批行为变化、实际回归与新版本缺陷，并记录证据等级和独立复审"
+  default_prompt: "使用 $rewrite-parity-audit 审计候选版本的行为差异、缺陷与安全风险，并给出可追溯的证据和复审要求。"

@@ -1,0 +1,4 @@
+interface:
+  display_name: "重写后稳定观察"
+  short_description: "依据运行证据比较基线、处理回归与瓶颈，并明确验证和剩余观察项"
+  default_prompt: "使用 $rewrite-stabilization 分析候选版本的运行表现，处理有证据的问题并记录验证与观察出口。"

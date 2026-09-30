@@ -1,0 +1,4 @@
+interface:
+  display_name: "旧系统规格蒸馏"
+  short_description: "从旧系统材料提取可追溯的需求、行为规则和端到端覆盖关系"
+  default_prompt: "使用 $legacy-spec-distillation 梳理这批旧系统材料，交付有证据链的五项规格与待确认事项。"
