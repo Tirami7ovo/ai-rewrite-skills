@@ -1,6 +1,6 @@
 ---
 name: legacy-spec-distillation
-description: Use when 从旧系统的协议、代码、测试或运行材料中蒸馏可交接的产品与行为规格，或需梳理遗留系统重写范围、兼容规则和 E2E 覆盖。
+description: Use when extracting requirements from an existing system before a rewrite or migration (旧系统规格蒸馏、重写交接、兼容行为与 E2E 覆盖梳理).
 ---
 
 # 旧系统规格蒸馏

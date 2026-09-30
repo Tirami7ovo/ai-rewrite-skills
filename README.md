@@ -87,5 +87,6 @@ Copy-Item -Recurse -LiteralPath '.\ai-rewrite-skills\skills\legacy-spec-distilla
 
 - [方法来源及原十二步的映射](docs/methodology.md)
 - [设计说明](docs/design.md)
+- [验证记录与适用边界](docs/validation.md)
 
 本仓库把实践经验整理为工作指导。适用范围、验证结果和未解决问题需要在具体项目中记录，技能本身不证明某次重写已经正确或适合上线。

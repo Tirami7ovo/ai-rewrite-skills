@@ -1,6 +1,6 @@
 ---
 name: spec-driven-rewrite
-description: Use when 根据已核对规格重写或迁移软件，并需处理保留行为、批准调整、未决规则与既有测试的交接和验证。
+description: Use when rebuilding or migrating software from an agreed specification (按规格重写、迁移、保留行为、批准调整与既有测试适配).
 ---
 
 # 依据规格重写
