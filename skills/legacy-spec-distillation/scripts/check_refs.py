@@ -3,13 +3,14 @@
 
     python3 check_refs.py <规格包目录> [--repo <代码仓库> ...]
 
-编号：表格首格或标题里出现的 `前缀-编号`（如 BR-01、EV-C03）视为定义。只检查在本包里
-至少定义过一次的前缀，外部文档的编号（如 P1-REQ-101）不受影响。
+文档须为 UTF-8 的 Markdown；目录不存在或没有文档时报错，不算通过。
+编号：表格首格或标题里出现的 `前缀-编号`（如 BR-01、EV-C03，可带反引号或加粗）视为定义。
+只检查在本包里至少定义过一次的前缀，外部文档的编号（如 P1-REQ-101）不受影响。
 已关闭问题：定义行写成"已决 <决定编号>：…"的 `Q-…`。其他行引用它时，同一行须注明"已决"
 或该决定编号，否则视为写回漏改。
 代码引用：反引号里的 `路径:行号`、`路径:起-止`，可带 `#符号`。路径可以只写文件名，
 按 --repo 下的文件匹配；不给 --repo 时跳过代码引用检查。
-有问题时逐条打印并以 1 退出。
+有问题时逐条打印并以 1 退出；输入无效时打印原因并以 2 退出。
 """
 
 import re
@@ -17,7 +18,7 @@ import sys
 from pathlib import Path
 
 ID = re.compile(r"(?<![\w-])([A-Z]{1,4}-[A-Z]?\d{1,4})(?![\w-])")
-DEFINITION = re.compile(r"^\s*(?:\|\s*|#{1,6}\s+)([A-Z]{1,4}-[A-Z]?\d{1,4})(?![\w-])")
+DEFINITION = re.compile(r"^\s*(?:\|\s*|#{1,6}\s+)[`*]*([A-Z]{1,4}-[A-Z]?\d{1,4})(?![\w-])")
 CITATION = re.compile(r"`([^`\s:]+\.[A-Za-z0-9]+):(\d+)(?:[-–](\d+))?(?:#([A-Za-z_]\w*))?`")
 SKIP_DIRS = {".git", "node_modules", "__pycache__", ".codegraph", "build"}
 NEAR = 3  # 符号允许偏离引用行的行数
@@ -49,7 +50,7 @@ def check_citation(match, files, cache):
     if not candidates:
         return f"找不到文件 {cited}"
     for path in candidates:
-        lines = cache.setdefault(path, path.read_text(errors="replace").splitlines())
+        lines = cache.setdefault(path, path.read_text(encoding="utf-8", errors="replace").splitlines())
         if end > len(lines):
             continue
         if symbol is None or any(symbol in line for line in lines[max(0, start - 1 - NEAR):end + NEAR]):
@@ -59,9 +60,24 @@ def check_citation(match, files, cache):
     return f"{match.group(0)} 附近找不到符号 {symbol}"
 
 
+def read_doc(path):
+    try:
+        return path.read_text(encoding="utf-8").splitlines()
+    except UnicodeDecodeError as error:
+        raise ValueError(f"{path} 不是 UTF-8 编码（{error.reason}）") from error
+
+
 def check(package, repos):
-    docs = sorted(Path(package).rglob("*.md"))
-    texts = {d: d.read_text(errors="replace").splitlines() for d in docs}
+    package = Path(package)
+    if not package.is_dir():
+        raise ValueError(f"规格包目录不存在或不是目录：{package}")
+    for repo in repos:
+        if not Path(repo).is_dir():
+            raise ValueError(f"代码仓库目录不存在：{repo}")
+    docs = sorted(package.rglob("*.md"))
+    if not docs:
+        raise ValueError(f"{package} 下没有 Markdown 文档")
+    texts = {d: read_doc(d) for d in docs}
     defined, closed = set(), {}
     for lines in texts.values():
         for line in lines:
@@ -94,6 +110,8 @@ def check(package, repos):
 
 
 def main(argv):
+    for stream in (sys.stdout, sys.stderr):
+        stream.reconfigure(errors="backslashreplace")  # 终端编码不含中文时转义输出，不崩溃
     if not argv or argv[0].startswith("-"):
         sys.exit(__doc__)
     package, repos = Path(argv[0]), []
@@ -103,7 +121,11 @@ def main(argv):
             sys.exit(__doc__)
         repos.append(Path(rest[1]))
         rest = rest[2:]
-    problems = check(package, repos)
+    try:
+        problems = check(package, repos)
+    except ValueError as error:
+        print(f"check_refs：{error}", file=sys.stderr)
+        sys.exit(2)
     for problem in problems:
         print(problem)
     print(f"check_refs：{'发现 %d 处问题' % len(problems) if problems else '通过'}", file=sys.stderr)

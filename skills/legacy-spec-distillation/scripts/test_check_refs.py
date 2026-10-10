@@ -13,14 +13,15 @@ class CheckRefsTest(unittest.TestCase):
         root = Path(self.tmp.name)
         self.pkg, self.repo = root / "pkg", root / "repo"
         (self.repo / "src").mkdir(parents=True)
-        (self.repo / "src/app.c").write_text("\n".join(["// x"] * 9 + ["int apply_config(void)", "{", "}"]) + "\n")
+        (self.repo / "src/app.c").write_text("\n".join(["// x"] * 9 + ["int apply_config(void)", "{", "}"]) + "\n",
+                                            encoding="utf-8")
         self.pkg.mkdir()
 
     def tearDown(self):
         self.tmp.cleanup()
 
     def run_check(self, text):
-        (self.pkg / "SPEC.md").write_text(text)
+        (self.pkg / "SPEC.md").write_text(text, encoding="utf-8")
         return check(self.pkg, [self.repo])
 
     def test_defined_and_undefined_ids(self):
@@ -48,8 +49,25 @@ class CheckRefsTest(unittest.TestCase):
             "缓存用满保旧拒新（Q-01，BR-09）\n按目标淘汰最旧（Q-01，DEC-01）\n见 Q-01（已决）\n")
         self.assertEqual([p.split("：", 1)[0] for p in problems], ["SPEC.md:4"])
 
+    def test_markup_around_definition(self):
+        problems = self.run_check("| `BR-01` | 结论 |\n| **Q-01** | 问题 |\n见 BR-02、Q-01\n")
+        self.assertEqual([p.split("：")[-1] for p in problems], ["引用了未定义的编号 BR-02"])
+
+    def test_rejects_missing_or_empty_package(self):
+        (self.pkg / "SPEC.md").write_text("| BR-01 | 结论 |\n", encoding="utf-8")
+        empty = Path(self.tmp.name) / "empty"
+        empty.mkdir()
+        for bad in (self.pkg / "gone", self.pkg / "SPEC.md", empty):
+            with self.assertRaises(ValueError):
+                check(bad, [])
+
+    def test_rejects_non_utf8_document(self):
+        (self.pkg / "SPEC.md").write_bytes("| Q-01 | 已决 DEC-01：问题 |\n".encode("gbk"))
+        with self.assertRaises(ValueError):
+            check(self.pkg, [])
+
     def test_citations_skipped_without_repo(self):
-        (self.pkg / "SPEC.md").write_text("见 `gone.c:3`\n")
+        (self.pkg / "SPEC.md").write_text("见 `gone.c:3`\n", encoding="utf-8")
         self.assertEqual(check(self.pkg, []), [])
 
 
