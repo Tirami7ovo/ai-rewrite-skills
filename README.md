@@ -60,7 +60,7 @@ Copy-Item -Recurse -LiteralPath '.\ai-rewrite-skills\skills\legacy-spec-distilla
 
 ```text
 使用 $legacy-spec-distillation，从提供的协议、旧代码、测试和运行记录中整理重写交接包。
-每条结论注明证据和版本，区分确认保留、确认调整和尚待确认。
+每条结论注明证据和版本，区分确认保留、确认调整和尚待确认；交付后逐轮盘问待确认事项并写回。
 ```
 
 ```text
